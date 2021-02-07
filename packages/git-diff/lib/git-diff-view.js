@@ -1,9 +1,13 @@
-const { CompositeDisposable } = require('atom');
-const { repositoryForPath } = require('./helpers');
+'use babel';
+
+import { CompositeDisposable } from 'atom';
+import repositoryForPath from './helpers';
+
+// const repositoryForPath = atom.project.repositoryForDirectory.bind(atom.project);
 
 const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
 
-module.exports = class GitDiffView {
+export default class GitDiffView {
   constructor(editor) {
     this.updateDiffs = this.updateDiffs.bind(this);
     this.editor = editor;
@@ -129,7 +133,7 @@ module.exports = class GitDiffView {
         })
       );
       this.subscriptions.add(
-        this.repository.onDidChangeStatus(changedPath => {
+        this.repository.onDidChangeStatus((changedPath) => {
           if (changedPath === this.editor.getPath()) this.scheduleUpdate();
         })
       );
@@ -184,10 +188,16 @@ module.exports = class GitDiffView {
   }
 
   markRange(startRow, endRow, klass) {
-    const marker = this.editor.markBufferRange([[startRow, 0], [endRow, 0]], {
-      invalidate: 'never'
-    });
+    const marker = this.editor.markBufferRange(
+      [
+        [startRow, 0],
+        [endRow, 0],
+      ],
+      {
+        invalidate: 'never',
+      }
+    );
     this.editor.decorateMarker(marker, { type: 'line-number', class: klass });
     this.markers.push(marker);
   }
-};
+}
