@@ -19,5 +19,8 @@
       "default": true,
       "description": "Wraps around to the first/last diff in the file when moving to next/previous diff."
     }
+  },
+  "dependencies": {
+    "atom-select-list": "^0.8.0"
   }
 }
