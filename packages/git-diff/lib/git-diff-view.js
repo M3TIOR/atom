@@ -3,8 +3,6 @@
 import { CompositeDisposable } from 'atom';
 import repositoryForPath from './helpers';
 
-// const repositoryForPath = atom.project.repositoryForDirectory.bind(atom.project);
-
 const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
 
 export default class GitDiffView {
@@ -124,8 +122,8 @@ export default class GitDiffView {
     }
   }
 
-  subscribeToRepository() {
-    this.repository = repositoryForPath(this.editor.getPath());
+  async subscribeToRepository() {
+    this.repository = await repositoryForPath(this.editor.getPath());
     if (this.repository) {
       this.subscriptions.add(
         this.repository.onDidChangeStatuses(() => {

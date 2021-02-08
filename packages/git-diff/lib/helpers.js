@@ -1,12 +1,9 @@
 'use babel';
 
-export default function (goalPath) {
-  const directories = atom.project.getDirectories();
-  const repositories = atom.project.getRepositories();
-  for (let i = 0; i < directories.length; i++) {
-    const directory = directories[i];
+export default async function (goalPath) {
+  for (const directory of atom.project.getDirectories()) {
     if (goalPath === directory.getPath() || directory.contains(goalPath)) {
-      return repositories[i];
+      return await atom.project.repositoryForDirectory(directory);
     }
   }
   return null;

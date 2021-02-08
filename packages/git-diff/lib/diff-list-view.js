@@ -3,8 +3,6 @@
 import SelectListView from 'atom-select-list';
 import repositoryForPath from './helpers';
 
-// const repositoryForPath = atom.project.repositoryForDirectory.bind(atom.project);
-
 export default class DiffListView {
   constructor() {
     this.selectListView = new SelectListView({
@@ -73,7 +71,7 @@ export default class DiffListView {
       this.cancel();
     } else if (editor) {
       this.editor = editor;
-      const repository = repositoryForPath(this.editor.getPath());
+      const repository = await repositoryForPath(this.editor.getPath());
       let diffs = repository
         ? repository.getLineDiffs(this.editor.getPath(), this.editor.getText())
         : [];
