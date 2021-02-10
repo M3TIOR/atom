@@ -11,31 +11,31 @@ export default {
   activate(state) {
     this.subscriptions = new CompositeDisposable();
 
-		diffViews = new Set();
+    diffViews = new Set();
 
     this.subscriptions.add(
       atom.workspace.observeTextEditors((editor) => {
         const editorElm = editor.getElement();
         const diffView = new GitDiffView(editor);
 
-				diffViews.add(diffView);
+        diffViews.add(diffView);
 
         this.subscriptions.add(
           atom.commands.add(editorElm, 'git-diff:toggle-diff-list', () => {
             if (diffListUI == null) diffListUI = new DiffListView();
             diffListUI.toggle();
           }),
-					diffView.emitter.on('did-destroy', () => diffViews.delete(diffView))
+          diffView.emitter.on('did-destroy', () => diffViews.delete(diffView))
         );
       })
     );
   },
 
   deactivate() {
-		diffListUI = null;
+    diffListUI = null;
 
-		for (v of diffViews) v.destroy();
-		diffViews = null;
+    for (const v of diffViews) v.destroy();
+    diffViews = null;
 
     this.subscriptions.dispose();
   },

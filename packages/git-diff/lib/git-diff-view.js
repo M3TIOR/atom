@@ -8,7 +8,7 @@ const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
 export default class GitDiffView {
   constructor(editor) {
     this.subscriptions = new CompositeDisposable();
-		this.emitter = new Emitter();
+    this.emitter = new Emitter();
     this.editor = editor;
     this.editorElm = editor.getElement();
     this.diffs = [];
@@ -23,12 +23,12 @@ export default class GitDiffView {
     this.moveToNextDiff = this.moveToNextDiff.bind(this);
     this.moveToPreviousDiff = this.moveToPreviousDiff.bind(this);
     this.updateIconDecoration = this.updateIconDecoration.bind(this);
-    this.scheduleUpdate = this.scheduleUpdate.bind(this);
-		this.destroy = this.destroy.bind(this);
-    // XXX: this gets passed directly to setImmediate! Will crash if not bound.
+    this.destroy = this.destroy.bind(this);
     this.updateDiffs = this.updateDiffs.bind(this);
 
     this.subscribeToRepository();
+    this.updateIconDecoration();
+    this.updateDiffs();
 
     this.subscriptions.add(
       atom.project.onDidChangePaths(this.subscribeToRepository),
@@ -55,17 +55,13 @@ export default class GitDiffView {
       this.editorElm.onDidAttach(this.updateIconDecoration),
       this.editor.onDidDestroy(this.destroy)
     );
-
-    this.updateIconDecoration();
-    this.scheduleUpdate();
   }
 
   destroy() {
-		this.cancelUpdate();
-		this.removeDecorations();
+    this.removeDecorations();
     this.subscriptions.dispose();
-		this.emitter.emit("did-destroy");
-		this.emitter.dispose();
+    this.emitter.emit('did-destroy');
+    this.emitter.dispose();
   }
 
   updateIconDecoration() {
@@ -153,15 +149,6 @@ export default class GitDiffView {
         })
       );
     }
-  }
-
-  cancelUpdate() {
-    clearImmediate(this.immediateId);
-  }
-
-  scheduleUpdate() {
-    this.cancelUpdate();
-    this.immediateId = setImmediate(this.updateDiffs);
   }
 
   updateDiffs() {
