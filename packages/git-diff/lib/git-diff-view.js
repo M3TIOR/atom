@@ -25,8 +25,6 @@ export default class GitDiffView {
     this.updateDiffs = this.updateDiffs.bind(this);
 
     this.subscribeToRepository();
-    this.updateIconDecoration();
-    this.updateDiffs();
 
     this.subscriptions.add(
       atom.project.onDidChangePaths(this.subscribeToRepository),
@@ -143,10 +141,9 @@ export default class GitDiffView {
 
   async subscribeToRepository() {
     if (this._repoSubs) this._repoSubs.dispose();
-
-    this.repository = await repositoryForPath(this.editor.getPath());
     this._repoSubs = new CompositeDisposable();
 
+    this.repository = await repositoryForPath(this.editor.getPath());
     if (this.repository != null) {
       this._repoSubs.add(
         this.repository.onDidChangeStatuses(this.updateDiffs),
@@ -157,6 +154,8 @@ export default class GitDiffView {
     }
 
     // TODO: Update screen after subscription.
+    this.updateIconDecoration();
+    this.updateDiffs();
   }
 
   updateDiffs() {
