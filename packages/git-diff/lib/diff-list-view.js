@@ -27,7 +27,10 @@ export default class DiffListView {
       },
       didConfirmSelection: (diff) => {
         this.cancel();
-        const bufferRow = diff.newStart > 0 ? diff.newStart - 1 : diff.newStart;
+
+        // Lazy equivalence -> 0 == false; New start will never be negative.
+        const bufferRow = diff.newStart || diff.newStart - 1;
+
         this.editor.setCursorBufferPosition([bufferRow, 0], {
           autoscroll: true,
         });
@@ -37,7 +40,9 @@ export default class DiffListView {
         this.cancel();
       },
     });
+
     this.selectListView.element.classList.add('diff-list-view');
+
     this.panel = atom.workspace.addModalPanel({
       item: this.selectListView,
       visible: false,
@@ -67,22 +72,31 @@ export default class DiffListView {
 
   async toggle() {
     const editor = atom.workspace.getActiveTextEditor();
+
     if (this.panel.isVisible()) {
       this.cancel();
     } else if (editor) {
       this.editor = editor;
-      const repository = await repositoryForPath(this.editor.getPath());
-      let diffs = repository
-        ? repository.getLineDiffs(this.editor.getPath(), this.editor.getText())
-        : [];
-      if (!diffs) diffs = [];
-      for (let diff of diffs) {
-        const bufferRow = diff.newStart > 0 ? diff.newStart - 1 : diff.newStart;
-        const lineText = this.editor.lineTextForBufferRow(bufferRow);
-        diff.lineText = lineText ? lineText.trim() : '';
+      const editorPath = this.editor.getPath();
+      const editorText = this.editor.getText();
+
+      const repository = await repositoryForPath();
+
+      if (repository) {
+        const diffs = repository.getLineDiffs(editorPath, editorText);
+
+        for (let diff of diffs) {
+          // Lazy equivalence -> 0 == false; New start will never be negative.
+          const bufferRow = diff.newStart || diff.newStart - 1;
+
+          diff.lineText = this.editor.lineTextForBufferRow(bufferRow).trim();
+        }
+
+        await this.selectListView.update({ items: diffs });
+      } else {
+        await this.selectListView.update({ items: [] });
       }
 
-      await this.selectListView.update({ items: diffs });
       this.attach();
     }
   }
