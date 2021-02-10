@@ -1,6 +1,6 @@
 'use babel';
 
-import { CompositeDisposable } from 'atom';
+import { CompositeDisposable, Emitter } from 'atom';
 import repositoryForPath from './helpers';
 
 const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
@@ -8,12 +8,12 @@ const MAX_BUFFER_LENGTH_TO_DIFF = 2 * 1024 * 1024;
 export default class GitDiffView {
   constructor(editor) {
     this.subscriptions = new CompositeDisposable();
+		this.emitter = new Emitter();
     this.editor = editor;
     this.editorElm = editor.getElement();
-    this.repository = null;
     this.diffs = [];
+    this.repository = null;
     this.markers = [];
-    this.decorations = {};
     this.lineNumbersAreVisible = atom.config.get('editor.showLineNumbers');
     this.useIcons = atom.config.get('git-diff.showIconsInEditorGutter');
 
@@ -24,6 +24,7 @@ export default class GitDiffView {
     this.moveToPreviousDiff = this.moveToPreviousDiff.bind(this);
     this.updateIconDecoration = this.updateIconDecoration.bind(this);
     this.scheduleUpdate = this.scheduleUpdate.bind(this);
+		this.destroy = this.destroy.bind(this);
     // XXX: this gets passed directly to setImmediate! Will crash if not bound.
     this.updateDiffs = this.updateDiffs.bind(this);
 
@@ -52,11 +53,7 @@ export default class GitDiffView {
         this.updateIconDecoration
       ),
       this.editorElm.onDidAttach(this.updateIconDecoration),
-      this.editor.onDidDestroy(() => {
-        this.cancelUpdate();
-        this.removeDecorations();
-        this.subscriptions.dispose();
-      })
+      this.editor.onDidDestroy(this.destroy)
     );
 
     this.updateIconDecoration();
@@ -64,7 +61,11 @@ export default class GitDiffView {
   }
 
   destroy() {
+		this.cancelUpdate();
+		this.removeDecorations();
     this.subscriptions.dispose();
+		this.emitter.emit("did-destroy");
+		this.emitter.dispose();
   }
 
   updateIconDecoration() {
