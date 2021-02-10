@@ -14,8 +14,6 @@ export default class GitDiffView {
     this.diffs = [];
     this.repository = null;
     this.markers = [];
-    this.lineNumbersAreVisible = atom.config.get('editor.showLineNumbers');
-    this.useIcons = atom.config.get('git-diff.showIconsInEditorGutter');
 
     // I know this looks janky but it works. Class methods are available
     // before the constructor is executed. It's a micro-opt above lambdas.
@@ -67,7 +65,10 @@ export default class GitDiffView {
   updateIconDecoration() {
     const gutter = this.editorElm.querySelector('.gutter');
     if (gutter) {
-      if (this.lineNumbersAreVisible && this.useIcons)
+      const lineNumbersAreVisible = atom.config.get('editor.showLineNumbers');
+      const useIcons = atom.config.get('git-diff.showIconsInEditorGutter');
+
+      if (lineNumbersAreVisible && useIcons)
         gutter.classList.add('git-diff-icon');
       else gutter.classList.remove('git-diff-icon');
     }
