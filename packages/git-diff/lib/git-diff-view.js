@@ -58,6 +58,7 @@ export default class GitDiffView {
   destroy() {
     this.removeDecorations();
     this.subscriptions.dispose();
+    this._repoSubs.dispose();
     this.emitter.emit('did-destroy');
     this.emitter.dispose();
   }
@@ -141,15 +142,21 @@ export default class GitDiffView {
   }
 
   async subscribeToRepository() {
+    if (this._repoSubs) this._repoSubs.dispose();
+
     this.repository = await repositoryForPath(this.editor.getPath());
+    this._repoSubs = new CompositeDisposable();
+
     if (this.repository != null) {
-      this.subscriptions.add(
-        this.repository.onDidChangeStatuses(this.scheduleUpdate),
+      this._repoSubs.add(
+        this.repository.onDidChangeStatuses(this.updateDiffs),
         this.repository.onDidChangeStatus((changedPath) => {
-          if (changedPath === this.editor.getPath()) this.scheduleUpdate();
+          if (changedPath === this.editor.getPath()) this.updateDiffs();
         })
       );
     }
+
+    // TODO: Update screen after subscription.
   }
 
   updateDiffs() {
